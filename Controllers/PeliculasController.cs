@@ -1,5 +1,6 @@
 using backendnet.Data;
 using backendnet.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,9 +8,10 @@ namespace backendnet.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class PeliculasController(DataContext context): Controller
+public class PeliculasController(IdentityContext context): Controller
 {
     [HttpGet]
+    [Authorize(Roles = "Usuario,Administrador")]
     public async Task<ActionResult<IEnumerable<Pelicula>>> GetPeliculas(string? s)
     {
         if (string.IsNullOrEmpty(s))
@@ -20,6 +22,7 @@ public class PeliculasController(DataContext context): Controller
     }
 
     [HttpGet("{id}")]
+    [Authorize(Roles = "Usuario,Administrador")]
     public async Task<ActionResult<Pelicula>> GetPelicula(int id)
     {
         var pelicula = await context.Pelicula.Include(i => i.Categorias).AsNoTracking().FirstOrDefaultAsync(s => s.PeliculaId == id);
@@ -29,6 +32,7 @@ public class PeliculasController(DataContext context): Controller
     }
 
     [HttpPost]
+    [Authorize(Roles = "Administrador")]
     public async Task<ActionResult<Pelicula>> PostPelicula(PeliculaDTO peliculaDTO)
     {
         Pelicula pelicula = new()
@@ -47,6 +51,7 @@ public class PeliculasController(DataContext context): Controller
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> PutPelicula(int id, PeliculaDTO peliculaDTO)
     {
         if (id != peliculaDTO.PeliculaId) return BadRequest();
@@ -65,6 +70,7 @@ public class PeliculasController(DataContext context): Controller
 
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrador")]
     public async Task<ActionResult> DeletePelicula(int id)
     {
         var pelicula = await context.Pelicula.FindAsync(id);
@@ -77,6 +83,7 @@ public class PeliculasController(DataContext context): Controller
     }
 
     [HttpPost("{id}/categoria")]
+    [Authorize(Roles = "Administrador")]    
     public async Task<ActionResult> PostCategoriaPelicula(int id, AsignaCategoriaDTO itemToAdd)
     {
         Categoria? categoria = await context.Categoria.FindAsync(itemToAdd.CategoriaId);
@@ -95,6 +102,7 @@ public class PeliculasController(DataContext context): Controller
     }
 
     [HttpDelete("{id}/categoria/{categoriaid}")]
+    [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> DeleteCategoriaPelicula(int id, int categoriaid)
     {
         Categoria? categoria = await context.Categoria.FindAsync(categoriaid);
